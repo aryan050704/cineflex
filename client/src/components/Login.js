@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   Container,
   Paper,
@@ -20,7 +21,6 @@ import { styled } from '@mui/material/styles';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import MovieIcon from '@mui/icons-material/Movie';
-import axios from 'axios';
 
 const GradientBackground = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
@@ -117,6 +117,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
 const Login = () => {
   const navigate = useNavigate();
   const theme = useTheme();
+  const { login, error: authError } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -125,8 +126,15 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    if (authError) {
+      setError(authError);
+    }
+  }, [authError]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(''); // Clear error when user types
   };
 
   const handleSubmit = async (e) => {
@@ -134,12 +142,22 @@ const Login = () => {
     setLoading(true);
     setError('');
 
+    if (!formData.email || !formData.password) {
+      setError('Please fill in all fields');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await axios.post('/api/auth/login', formData);
-      localStorage.setItem('token', res.data.token);
-      navigate('/');
+      const success = await login(formData.email, formData.password);
+      if (success) {
+        navigate('/');
+      } else {
+        setError('Invalid email or password');
+      }
     } catch (err) {
-      setError(err.response?.data?.msg || 'An error occurred');
+      console.error('Login error:', err);
+      setError('An error occurred during login. Please try again.');
     } finally {
       setLoading(false);
     }

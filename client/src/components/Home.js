@@ -7,10 +7,10 @@ import {
   CircularProgress,
   Alert
 } from '@mui/material';
-import axios from 'axios';
 import ContentCard from './ContentCard';
 import MovieCarousel from './MovieCarousel';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import tmdbService from '../services/tmdbService';
 
 const Home = () => {
   const [trending, setTrending] = useState([]);
@@ -27,56 +27,50 @@ const Home = () => {
   const fetchData = async (pageNum = 1, append = false) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'x-auth-token': token
-        }
-      };
-
+      
       const [
-        trendingRes,
-        popularMoviesRes,
-        popularTVShowsRes,
-        topRatedMoviesRes,
-        topRatedTVShowsRes,
-        upcomingMoviesRes
+        trendingData,
+        popularMoviesData,
+        popularTVShowsData,
+        topRatedMoviesData,
+        topRatedTVShowsData,
+        upcomingMoviesData
       ] = await Promise.all([
-        axios.get('/api/movies/trending', config),
-        axios.get(`/api/movies/popular/movie?page=${pageNum}`, config),
-        axios.get(`/api/movies/popular/tv?page=${pageNum}`, config),
-        axios.get(`/api/movies/top/movie?page=${pageNum}`, config),
-        axios.get(`/api/movies/top/tv?page=${pageNum}`, config),
-        axios.get(`/api/movies/upcoming?page=${pageNum}`, config)
+        tmdbService.getTrendingMovies(),
+        fetch(`${tmdbService.BASE_URL}/movie/popular?api_key=${tmdbService.API_KEY}&page=${pageNum}`).then(res => res.json()),
+        fetch(`${tmdbService.BASE_URL}/tv/popular?api_key=${tmdbService.API_KEY}&page=${pageNum}`).then(res => res.json()),
+        fetch(`${tmdbService.BASE_URL}/movie/top_rated?api_key=${tmdbService.API_KEY}&page=${pageNum}`).then(res => res.json()),
+        fetch(`${tmdbService.BASE_URL}/tv/top_rated?api_key=${tmdbService.API_KEY}&page=${pageNum}`).then(res => res.json()),
+        fetch(`${tmdbService.BASE_URL}/movie/upcoming?api_key=${tmdbService.API_KEY}&page=${pageNum}`).then(res => res.json())
       ]);
 
       if (append) {
-        setPopularMovies(prev => [...prev, ...(popularMoviesRes.data.results || [])]);
-        setPopularTVShows(prev => [...prev, ...(popularTVShowsRes.data.results || [])]);
-        setTopRatedMovies(prev => [...prev, ...(topRatedMoviesRes.data.results || [])]);
-        setTopRatedTVShows(prev => [...prev, ...(topRatedTVShowsRes.data.results || [])]);
-        setUpcomingMovies(prev => [...prev, ...(upcomingMoviesRes.data.results || [])]);
+        setPopularMovies(prev => [...prev, ...(popularMoviesData.results || [])]);
+        setPopularTVShows(prev => [...prev, ...(popularTVShowsData.results || [])]);
+        setTopRatedMovies(prev => [...prev, ...(topRatedMoviesData.results || [])]);
+        setTopRatedTVShows(prev => [...prev, ...(topRatedTVShowsData.results || [])]);
+        setUpcomingMovies(prev => [...prev, ...(upcomingMoviesData.results || [])]);
       } else {
-        setTrending(trendingRes.data);
-        setPopularMovies(popularMoviesRes.data.results || []);
-        setPopularTVShows(popularTVShowsRes.data.results || []);
-        setTopRatedMovies(topRatedMoviesRes.data.results || []);
-        setTopRatedTVShows(topRatedTVShowsRes.data.results || []);
-        setUpcomingMovies(upcomingMoviesRes.data.results || []);
+        setTrending(trendingData);
+        setPopularMovies(popularMoviesData.results || []);
+        setPopularTVShows(popularTVShowsData.results || []);
+        setTopRatedMovies(topRatedMoviesData.results || []);
+        setTopRatedTVShows(topRatedTVShowsData.results || []);
+        setUpcomingMovies(upcomingMoviesData.results || []);
       }
 
       setHasMore(
-        popularMoviesRes.data.page < popularMoviesRes.data.total_pages &&
-        popularTVShowsRes.data.page < popularTVShowsRes.data.total_pages &&
-        topRatedMoviesRes.data.page < topRatedMoviesRes.data.total_pages &&
-        topRatedTVShowsRes.data.page < topRatedTVShowsRes.data.total_pages &&
-        upcomingMoviesRes.data.page < upcomingMoviesRes.data.total_pages
+        popularMoviesData.page < popularMoviesData.total_pages &&
+        popularTVShowsData.page < popularTVShowsData.total_pages &&
+        topRatedMoviesData.page < topRatedMoviesData.total_pages &&
+        topRatedTVShowsData.page < topRatedTVShowsData.total_pages &&
+        upcomingMoviesData.page < upcomingMoviesData.total_pages
       );
 
       setError(null);
     } catch (err) {
       console.error('Error fetching data:', err);
-      setError(err.response?.data?.msg || 'Error fetching data. Please try again later.');
+      setError('Error fetching data. Please try again later.');
     } finally {
       setLoading(false);
     }

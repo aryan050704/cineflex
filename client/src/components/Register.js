@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   Container,
   Paper,
@@ -117,6 +118,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
 const Register = () => {
   const navigate = useNavigate();
   const theme = useTheme();
+  const { register, error: authError } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -128,8 +130,36 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  useEffect(() => {
+    if (authError) {
+      setError(authError);
+    }
+  }, [authError]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(''); // Clear error when user types
+  };
+
+  const validateForm = () => {
+    if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
+      setError('Please fill in all fields');
+      return false;
+    }
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e) => {
@@ -137,22 +167,19 @@ const Register = () => {
     setLoading(true);
     setError('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+    if (!validateForm()) {
       setLoading(false);
       return;
     }
 
     try {
-      const res = await axios.post('/api/auth/register', {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-      });
-      localStorage.setItem('token', res.data.token);
-      navigate('/');
+      const success = await register(formData.username, formData.email, formData.password);
+      if (success) {
+        navigate('/');
+      }
     } catch (err) {
-      setError(err.response?.data?.msg || 'An error occurred');
+      console.error('Registration error:', err);
+      setError('An error occurred during registration. Please try again.');
     } finally {
       setLoading(false);
     }

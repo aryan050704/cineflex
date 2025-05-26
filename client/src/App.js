@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import Navbar from './components/Navbar';
@@ -93,7 +93,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
-        <Router>
+        <Router basename={process.env.PUBLIC_URL}>
           <Box sx={{ display: 'flex' }}>
             <Sidebar />
             <MainContent disableHover={window.location.pathname === '/'}>
