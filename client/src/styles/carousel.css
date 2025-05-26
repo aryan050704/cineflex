@@ -1,0 +1,111 @@
+/* Custom styles for the movie carousel */
+.slick-slider {
+  margin-bottom: 30px;
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+.slick-dots {
+  bottom: 25px;
+  z-index: 2;
+}
+
+.slick-dots li {
+  margin: 0 8px;
+}
+
+.slick-dots li button:before {
+  color: white;
+  font-size: 12px;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.slick-dots li.slick-active button:before {
+  color: white;
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.slick-prev,
+.slick-next {
+  z-index: 1;
+  width: 50px;
+  height: 50px;
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.slick-prev:hover,
+.slick-next:hover {
+  background: rgba(0, 0, 0, 0.6) !important;
+  transform: scale(1.1);
+}
+
+.slick-prev {
+  left: 25px;
+}
+
+.slick-next {
+  right: 25px;
+}
+
+.slick-prev:before,
+.slick-next:before {
+  font-size: 30px;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.slick-prev:hover:before,
+.slick-next:hover:before {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Add smooth transitions for slides */
+.slick-slide {
+  transition: transform 0.5s ease;
+}
+
+.slick-slide > div {
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .slick-prev,
+  .slick-next {
+    width: 40px;
+    height: 40px;
+  }
+
+  .slick-prev:before,
+  .slick-next:before {
+    font-size: 24px;
+  }
+
+  .slick-prev {
+    left: 15px;
+  }
+
+  .slick-next {
+    right: 15px;
+  }
+
+  .slick-dots li button:before {
+    font-size: 10px;
+  }
+}
+
+/* Add smooth fade effect */
+.slick-slide > div {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.slick-active > div {
+  opacity: 1;
+} 
